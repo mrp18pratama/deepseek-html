@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doa Ibu Qurban - Sistem Kasir</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #2c786c;
+            color: white;
+            padding: 15px 0;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #2c786c;
+            border-color: #2c786c;
+        }
+        .btn-primary:hover {
+            background-color: #004445;
+            border-color: #004445;
+        }
+        .signature-pad-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            width: 100%;
+            padding: 10px;
+        }
+        .signature-pad {
+            width: 100%;
+            height: 200px;
+            background-color: white;
+        }
+        .nav-tabs .nav-link.active {
+            color: #2c786c;
+            font-weight: bold;
+        }
+        .receipt {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .signature-container {
+            margin-bottom: 20px;
+        }
+        .signature-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                padding-top: 20px;
+            }
+            .receipt {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            .modal-body .receipt {
+                padding: 20px;
+            }
+            @page {
+                size: auto;
+                margin: 10mm;
+            }
+        }
+        @media (max-width: 768px) {
+            .signature-pad {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header text-center mb-4 no-print">
+        <h1><i class="fas fa-paw"></i> Doa Ibu Qurban</h1>
+        <p class="mb-0">Sistem Kasir Penjualan Hewan Qurban</p>
+    </div>
+
+    <div class="container no-print">
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="transaksi-tab" data-bs-toggle="tab" data-bs-target="#transaksi" type="button" role="tab">Transaksi Baru</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="riwayat-tab" data-bs-toggle="tab" data-bs-target="#riwayat" type="button" role="tab">Riwayat Transaksi</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Tab Transaksi Baru -->
+            <div class="tab-pane fade show active" id="transaksi" role="tabpanel">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-cash-register"></i> Form Transaksi</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="transactionForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="transactionDate" class="form-label">Tanggal</label>
+                                    <input type="date" class="form-control" id="transactionDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionTime" class="form-label">Waktu</label>
+                                    <input type="time" class="form-control" id="transactionTime" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">Nama Customer</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customerAddress" class="form-label">Alamat</label>
+                                <textarea class="form-control" id="customerAddress" rows="2" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customerPhone" class="form-label">Nomor Handphone</label>
+                                <input type="tel" class="form-control" id="customerPhone" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="animalName" class="form-label">Nama Hewan Qurban</label>
+                                <input type="text" class="form-control" id="animalName" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="animalPrice" class="form-label">Harga</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" id="animalPrice" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Pembayaran</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="paymentType" id="fullPayment" value="full" checked>
+                                        <label class="form-check-label" for="fullPayment">Pelunasan</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="paymentType" id="downPayment" value="dp">
+                                        <label class="form-check-label" for="downPayment">DP (Uang Muka)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3" id="dpAmountContainer" style="display: none;">
+                                <label for="dpAmount" class="form-label">Jumlah DP</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" id="dpAmount">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="deliveryDate" class="form-label">Tanggal Pengiriman</label>
+                                <input type="date" class="form-control" id="deliveryDate">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-md-6 signature-container">
+                                        <div class="signature-label">Tanda Tangan Pembeli</div>
+                                        <div class="signature-pad-container">
+                                            <canvas id="customerSignatureCanvas" class="signature-pad"></canvas>
+                                        </div>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary clear-signature" data-canvas="customer">
+                                                <i class="fas fa-eraser"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 signature-container">
+                                        <div class="signature-label">Tanda Tangan Penjual</div>
+                                        <div class="signature-pad-container">
+                                            <canvas id="sellerSignatureCanvas" class="signature-pad"></canvas>
+                                        </div>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary clear-signature" data-canvas="seller">
+                                                <i class="fas fa-eraser"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Simpan Transaksi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card no-print" id="receiptPreview" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-receipt"></i> Struk Transaksi</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="receiptContent"></div>
+                        <div class="d-grid gap-2 mt-3">
+                            <button class="btn btn-success" id="printReceipt">
+                                <i class="fas fa-print"></i> Cetak Struk
+                            </button>
+                            <button class="btn btn-secondary" id="downloadPDF">
+                                <i class="fas fa-file-pdf"></i> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab Riwayat Transaksi -->
+            <div class="tab-pane fade" id="riwayat" role="tabpanel">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-history"></i> Riwayat Transaksi</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="searchHistory" placeholder="Cari transaksi...">
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-success" id="exportExcel">
+                                        <i class="fas fa-file-excel"></i> Export ke Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Customer</th>
+                                        <th>Hewan</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionHistory">
+                                    <!-- Data akan diisi oleh JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Detail Transaksi -->
+    <div class="modal fade" id="transactionDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header no-print">
+                    <h5 class="modal-title">Detail Transaksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="transactionDetailContent">
+                    <!-- Konten akan diisi oleh JavaScript -->
+                </div>
+                <div class="modal-footer no-print">
+                    <button type="button" class="btn btn-danger" id="deleteTransaction">
+                        <i class="fas fa-trash"></i> Hapus Transaksi
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="printSelectedReceipt">
+                        <i class="fas fa-print"></i> Cetak
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+    <script>
+        // Inisialisasi Signature Pad untuk pembeli dan penjual
+        const customerCanvas = document.getElementById('customerSignatureCanvas');
+        const customerSignaturePad = new SignaturePad(customerCanvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+        
+        const sellerCanvas = document.getElementById('sellerSignatureCanvas');
+        const sellerSignaturePad = new SignaturePad(sellerCanvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+        
+        // Fungsi untuk menyesuaikan ukuran canvas
+        function resizeCanvas(canvas) {
+            const container = canvas.parentElement;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            
+            canvas.width = container.offsetWidth * ratio;
+            canvas.height = container.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+            
+            // Bersihkan dan gambar ulang tanda tangan jika ada
+            if (canvas === customerCanvas && !customerSignaturePad.isEmpty()) {
+                customerSignaturePad.fromDataURL(customerSignaturePad.toDataURL());
+            } else if (canvas === sellerCanvas && !sellerSignaturePad.isEmpty()) {
+                sellerSignaturePad.fromDataURL(sellerSignaturePad.toDataURL());
+            }
+        }
+        
+        // Sesuaikan ukuran canvas saat pertama kali dimuat dan saat window di-resize
+        window.addEventListener('load', function() {
+            resizeCanvas(customerCanvas);
+            resizeCanvas(sellerCanvas);
+        });
+        
+        window.addEventListener('resize', function() {
+            resizeCanvas(customerCanvas);
+            resizeCanvas(sellerCanvas);
+        });
+        
+        // Tombol hapus tanda tangan
+        document.querySelectorAll('.clear-signature').forEach(button => {
+            button.addEventListener('click', function() {
+                const canvasType = this.getAttribute('data-canvas');
+                if (canvasType === 'customer') {
+                    customerSignaturePad.clear();
+                } else {
+                    sellerSignaturePad.clear();
+                }
+            });
+        });
+        
+        // Toggle DP Amount field
+        document.querySelectorAll('input[name="paymentType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('dpAmountContainer').style.display = 
+                    this.value === 'dp' ? 'block' : 'none';
+            });
+        });
+        
+        // Set tanggal dan waktu default
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().substring(0, 5);
+            
+            document.getElementById('transactionDate').value = dateStr;
+            document.getElementById('transactionTime').value = timeStr;
+            
+            // Load riwayat transaksi dari localStorage
+            loadTransactionHistory();
+            
+            // Event listener untuk pencarian
+            document.getElementById('searchHistory').addEventListener('input', function() {
+                filterTransactions(this.value);
+            });
+        });
+        
+        // Filter transaksi berdasarkan pencarian
+        function filterTransactions(searchTerm) {
+            const rows = document.querySelectorAll('#transactionHistory tr');
+            searchTerm = searchTerm.toLowerCase();
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+        
+        // Simpan transaksi
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Ambil data dari form
+            const transaction = {
+                id: Date.now(),
+                date: document.getElementById('transactionDate').value,
+                time: document.getElementById('transactionTime').value,
+                customerName: document.getElementById('customerName').value,
+                customerAddress: document.getElementById('customerAddress').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                animalName: document.getElementById('animalName').value,
+                animalPrice: parseInt(document.getElementById('animalPrice').value),
+                paymentType: document.querySelector('input[name="paymentType"]:checked').value,
+                dpAmount: document.getElementById('dpAmount').value ? parseInt(document.getElementById('dpAmount').value) : 0,
+                deliveryDate: document.getElementById('deliveryDate').value,
+                customerSignature: customerSignaturePad.isEmpty() ? null : customerSignaturePad.toDataURL(),
+                sellerSignature: sellerSignaturePad.isEmpty() ? null : sellerSignaturePad.toDataURL(),
+                createdAt: new Date().toISOString()
+            };
+            
+            // Simpan ke localStorage
+            saveTransaction(transaction);
+            
+            // Tampilkan struk
+            showReceipt(transaction);
+            
+            // Reset form
+            this.reset();
+            customerSignaturePad.clear();
+            sellerSignaturePad.clear();
+            
+            // Set tanggal dan waktu default lagi
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().substring(0, 5);
+            
+            document.getElementById('transactionDate').value = dateStr;
+            document.getElementById('transactionTime').value = timeStr;
+            
+            // Perbarui riwayat transaksi
+            loadTransactionHistory();
+        });
+        
+        // Fungsi untuk menyimpan transaksi ke localStorage
+        function saveTransaction(transaction) {
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            transactions.push(transaction);
+            localStorage.setItem('qurbanTransactions', JSON.stringify(transactions));
+        }
+        
+        // Fungsi untuk memuat riwayat transaksi
+        function loadTransactionHistory() {
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            const tbody = document.getElementById('transactionHistory');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Tidak ada transaksi</td></tr>';
+                return;
+            }
+            
+            // Urutkan berdasarkan tanggal terbaru
+            transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            transactions.forEach(transaction => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(transaction.date)} ${transaction.time}</td>
+                    <td>${transaction.customerName}</td>
+                    <td>${transaction.animalName}</td>
+                    <td>${formatCurrency(transaction.animalPrice)}</td>
+                    <td>${transaction.paymentType === 'full' ? 'Lunas' : 'DP'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary view-detail" data-id="${transaction.id}">
+                            <i class="fas fa-eye"></i> Lihat
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-transaction" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Tambahkan event listener untuk tombol lihat detail
+            document.querySelectorAll('.view-detail').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    showTransactionDetail(id);
+                });
+            });
+            
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-transaction').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                        deleteTransaction(id);
+                    }
+                });
+            });
+        }
+        
+        // Fungsi untuk menghapus transaksi
+        function deleteTransaction(id) {
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('qurbanTransactions', JSON.stringify(transactions));
+            loadTransactionHistory();
+            
+            // Tutup modal jika terbuka
+            const modal = bootstrap.Modal.getInstance(document.getElementById('transactionDetailModal'));
+            if (modal) modal.hide();
+        }
+        
+        // Fungsi untuk menampilkan detail transaksi
+        function showTransactionDetail(id) {
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            const transaction = transactions.find(t => t.id === id);
+            
+            if (!transaction) return;
+            
+            const remainingAmount = transaction.paymentType === 'dp' ? 
+                transaction.animalPrice - transaction.dpAmount : 0;
+            
+            const modalContent = document.getElementById('transactionDetailContent');
+            modalContent.innerHTML = `
+                <div class="receipt">
+                    <div class="text-center mb-4">
+                        <h4>Doa Ibu Qurban</h4>
+                        <p class="mb-1">Sistem Kasir Penjualan Hewan Qurban</p>
+                        <p class="mb-1">${formatDate(transaction.date)} ${transaction.time}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Detail Transaksi</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td width="30%">Nama Customer</td>
+                                <td>${transaction.customerName}</td>
+                            </tr>
+                            <tr>
+                                <td>Alamat</td>
+                                <td>${transaction.customerAddress}</td>
+                            </tr>
+                            <tr>
+                                <td>No. HP</td>
+                                <td>${transaction.customerPhone}</td>
+                            </tr>
+                            <tr>
+                                <td>Hewan Qurban</td>
+                                <td>${transaction.animalName}</td>
+                            </tr>
+                            <tr>
+                                <td>Harga</td>
+                                <td>${formatCurrency(transaction.animalPrice)}</td>
+                            </tr>
+                            <tr>
+                                <td>Status Pembayaran</td>
+                                <td>${transaction.paymentType === 'full' ? 'Lunas' : 'DP'}</td>
+                            </tr>
+                            ${transaction.paymentType === 'dp' ? `
+                            <tr>
+                                <td>Jumlah DP</td>
+                                <td>${formatCurrency(transaction.dpAmount)}</td>
+                            </tr>
+                            <tr>
+                                <td>Sisa Pembayaran</td>
+                                <td>${formatCurrency(remainingAmount)}</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td>Tanggal Pengiriman</td>
+                                <td>${transaction.deliveryDate ? formatDate(transaction.deliveryDate) : '-'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            ${transaction.customerSignature ? `
+                            <div class="signature-container">
+                                <div class="signature-label">Tanda Tangan Pembeli</div>
+                                <div class="signature-pad-container">
+                                    <img src="${transaction.customerSignature}" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            ${transaction.sellerSignature ? `
+                            <div class="signature-container">
+                                <div class="signature-label">Tanda Tangan Penjual</div>
+                                <div class="signature-pad-container">
+                                    <img src="${transaction.sellerSignature}" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set data-id untuk tombol cetak dan hapus
+            document.getElementById('printSelectedReceipt').setAttribute('data-id', id);
+            document.getElementById('deleteTransaction').setAttribute('data-id', id);
+            
+            // Tampilkan modal
+            const modal = new bootstrap.Modal(document.getElementById('transactionDetailModal'));
+            modal.show();
+        }
+        
+        // Event listener untuk tombol hapus di modal
+        document.getElementById('deleteTransaction').addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                deleteTransaction(id);
+            }
+        });
+        
+        // Fungsi untuk menampilkan struk
+        function showReceipt(transaction) {
+            const remainingAmount = transaction.paymentType === 'dp' ? 
+                transaction.animalPrice - transaction.dpAmount : 0;
+            
+            const receiptContent = document.getElementById('receiptContent');
+            receiptContent.innerHTML = `
+                <div class="receipt">
+                    <div class="text-center mb-4">
+                        <h4>Doa Ibu Qurban</h4>
+                        <p class="mb-1">Sistem Kasir Penjualan Hewan Qurban</p>
+                        <p class="mb-1">${formatDate(transaction.date)} ${transaction.time}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Detail Transaksi</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td width="30%">Nama Customer</td>
+                                <td>${transaction.customerName}</td>
+                            </tr>
+                            <tr>
+                                <td>Alamat</td>
+                                <td>${transaction.customerAddress}</td>
+                            </tr>
+                            <tr>
+                                <td>No. HP</td>
+                                <td>${transaction.customerPhone}</td>
+                            </tr>
+                            <tr>
+                                <td>Hewan Qurban</td>
+                                <td>${transaction.animalName}</td>
+                            </tr>
+                            <tr>
+                                <td>Harga</td>
+                                <td>${formatCurrency(transaction.animalPrice)}</td>
+                            </tr>
+                            <tr>
+                                <td>Status Pembayaran</td>
+                                <td>${transaction.paymentType === 'full' ? 'Lunas' : 'DP'}</td>
+                            </tr>
+                            ${transaction.paymentType === 'dp' ? `
+                            <tr>
+                                <td>Jumlah DP</td>
+                                <td>${formatCurrency(transaction.dpAmount)}</td>
+                            </tr>
+                            <tr>
+                                <td>Sisa Pembayaran</td>
+                                <td>${formatCurrency(remainingAmount)}</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td>Tanggal Pengiriman</td>
+                                <td>${transaction.deliveryDate ? formatDate(transaction.deliveryDate) : '-'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            ${transaction.customerSignature ? `
+                            <div class="signature-container">
+                                <div class="signature-label">Tanda Tangan Pembeli</div>
+                                <div class="signature-pad-container">
+                                    <img src="${transaction.customerSignature}" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            ${transaction.sellerSignature ? `
+                            <div class="signature-container">
+                                <div class="signature-label">Tanda Tangan Penjual</div>
+                                <div class="signature-pad-container">
+                                    <img src="${transaction.sellerSignature}" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p>Terima kasih atas kepercayaan Anda</p>
+                    </div>
+                </div>
+            `;
+            
+            // Set data-id untuk tombol cetak
+            document.getElementById('printReceipt').setAttribute('data-id', transaction.id);
+            document.getElementById('downloadPDF').setAttribute('data-id', transaction.id);
+            
+            // Tampilkan preview struk
+            document.getElementById('receiptPreview').style.display = 'block';
+        }
+        
+        // Cetak struk
+        document.getElementById('printReceipt').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Cetak struk dari modal
+        document.getElementById('printSelectedReceipt').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Download PDF yang lebih baik
+        document.getElementById('downloadPDF').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Tambahkan margin atas yang lebih besar
+            let y = 20;
+            
+            // Tambahkan header
+            doc.setFontSize(18);
+            doc.text('Doa Ibu Qurban', 105, y, { align: 'center' });
+            y += 10;
+            
+            doc.setFontSize(12);
+            doc.text('Sistem Kasir Penjualan Hewan Qurban', 105, y, { align: 'center' });
+            y += 15;
+            
+            // Tambahkan detail transaksi
+            const id = this.getAttribute('data-id');
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            const transaction = transactions.find(t => t.id === parseInt(id));
+            
+            if (transaction) {
+                doc.setFontSize(14);
+                doc.text('Detail Transaksi', 14, y);
+                y += 10;
+                
+                doc.setFontSize(10);
+                doc.text(`Tanggal: ${formatDate(transaction.date)} ${transaction.time}`, 14, y);
+                y += 7;
+                
+                // Buat tabel detail transaksi
+                const transactionData = [
+                    ['Nama Customer', transaction.customerName],
+                    ['Alamat', transaction.customerAddress],
+                    ['No. HP', transaction.customerPhone],
+                    ['Hewan Qurban', transaction.animalName],
+                    ['Harga', formatCurrency(transaction.animalPrice)],
+                    ['Status Pembayaran', transaction.paymentType === 'full' ? 'Lunas' : 'DP']
+                ];
+                
+                if (transaction.paymentType === 'dp') {
+                    transactionData.push(
+                        ['Jumlah DP', formatCurrency(transaction.dpAmount)],
+                        ['Sisa Pembayaran', formatCurrency(transaction.animalPrice - transaction.dpAmount)]
+                    );
+                }
+                
+                transactionData.push(
+                    ['Tanggal Pengiriman', transaction.deliveryDate ? formatDate(transaction.deliveryDate) : '-']
+                );
+                
+                // Hitung lebar kolom
+                const pageWidth = doc.internal.pageSize.width;
+                const firstColWidth = pageWidth * 0.3;
+                const secondColWidth = pageWidth * 0.7 - 28; // 28 adalah margin kiri+kanan
+                
+                // Tambahkan setiap baris
+                transactionData.forEach(row => {
+                    if (y > doc.internal.pageSize.height - 20) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    doc.text(row[0], 14, y);
+                    doc.text(row[1], 14 + firstColWidth, y);
+                    y += 7;
+                });
+                
+                y += 10;
+                
+                // Tambahkan tanda tangan jika ada
+                if (transaction.customerSignature || transaction.sellerSignature) {
+                    doc.setFontSize(12);
+                    doc.text('Tanda Tangan', 105, y, { align: 'center' });
+                    y += 10;
+                    
+                    const signatureWidth = 80;
+                    const signatureHeight = 40;
+                    const signatureX = (pageWidth - signatureWidth * 2) / 3;
+                    
+                    if (transaction.customerSignature) {
+                        if (y + signatureHeight > doc.internal.pageSize.height - 20) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        
+                        doc.text('Pembeli:', signatureX, y);
+                        y += 5;
+                        doc.addImage(transaction.customerSignature, 'JPEG', signatureX, y, signatureWidth, signatureHeight);
+                    }
+                    
+                    if (transaction.sellerSignature) {
+                        if (y + signatureHeight > doc.internal.pageSize.height - 20) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        
+                        doc.text('Penjual:', signatureX * 2 + signatureWidth, y);
+                        y += 5;
+                        doc.addImage(transaction.sellerSignature, 'JPEG', signatureX * 2 + signatureWidth, y, signatureWidth, signatureHeight);
+                    }
+                    
+                    y += signatureHeight + 10;
+                }
+                
+                // Tambahkan footer
+                doc.setFontSize(10);
+                doc.text('Terima kasih atas kepercayaan Anda', 105, y, { align: 'center' });
+            }
+            
+            // Simpan PDF
+            doc.save(`Struk_Qurban_${id}.pdf`);
+        });
+        
+        // Export ke Excel
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            let transactions = JSON.parse(localStorage.getItem('qurbanTransactions')) || [];
+            
+            if (transactions.length === 0) {
+                alert('Tidak ada data transaksi untuk diexport');
+                return;
+            }
+            
+            // Format data untuk Excel
+            const data = transactions.map(t => ({
+                'ID': t.id,
+                'Tanggal': formatDate(t.date),
+                'Waktu': t.time,
+                'Nama Customer': t.customerName,
+                'Alamat': t.customerAddress,
+                'No. HP': t.customerPhone,
+                'Hewan Qurban': t.animalName,
+                'Harga': t.animalPrice,
+                'Status Pembayaran': t.paymentType === 'full' ? 'Lunas' : 'DP',
+                'Jumlah DP': t.paymentType === 'dp' ? t.dpAmount : 0,
+                'Sisa Pembayaran': t.paymentType === 'dp' ? t.animalPrice - t.dpAmount : 0,
+                'Tanggal Pengiriman': t.deliveryDate ? formatDate(t.deliveryDate) : '-',
+                'Tanggal Transaksi': formatDateTime(t.createdAt)
+            }));
+            
+            // Buat worksheet
+            const ws = XLSX.utils.json_to_sheet(data);
+            
+            // Buat workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Transaksi Qurban");
+            
+            // Export ke file
+            XLSX.writeFile(wb, `Transaksi_Qurban_${formatDate(new Date())}.xlsx`);
+        });
+        
+        // Fungsi utilitas untuk format tanggal
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Fungsi utilitas untuk format tanggal dan waktu
+        function formatDateTime(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleString('id-ID');
+        }
+        
+        // Fungsi utilitas untuk format mata uang
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+    </script>
+</body>
+</html>
